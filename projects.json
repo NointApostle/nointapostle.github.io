@@ -6,13 +6,31 @@
     "jaStyle": "sans",
     "kind": "Habit and goal tracker",
     "description": "Daily, weekly, monthly and long-term goals, with timers, streaks and badges. Each check-off is one more notch.",
-    "platforms": ["Android"],
+    "platforms": [
+      "Android"
+    ],
     "status": "released",
     "url": "https://kizamu.nointdev.xyz/",
     "releases": "https://github.com/NointApostle/kizamu/releases",
     "icon": "assets/kizamu.png",
     "schemaType": "MobileApplication",
-    "category": "LifestyleApplication"
+    "category": "LifestyleApplication",
+    "colors": {
+      "bg": "linear-gradient(140deg, #8273F2 0%, #5443D2 100%)",
+      "ink": "#FFFFFF",
+      "soft": "rgba(255, 255, 255, 0.78)",
+      "accent": "#F5A623",
+      "button": "#FFFFFF",
+      "buttonInk": "#4A3AC4",
+      "line": "rgba(255, 255, 255, 0.22)"
+    },
+    "shots": [
+      {
+        "src": "assets/kizamu-today.png",
+        "width": 300,
+        "height": 436
+      }
+    ]
   },
   {
     "id": "itogatari",
@@ -21,12 +39,37 @@
     "jaStyle": "serif",
     "kind": "Story bible for writers",
     "description": "Characters, places and world notes kept next to the chapters you're writing. Mention someone in a scene and their page lists every scene they're in.",
-    "platforms": ["Android", "Windows", "Linux"],
+    "platforms": [
+      "Android",
+      "Windows",
+      "Linux"
+    ],
     "status": "released",
     "url": "https://itogatari.nointdev.xyz/",
     "releases": "https://github.com/NointApostle/itogatari-release/releases",
     "icon": "assets/itogatari.png",
     "schemaType": "SoftwareApplication",
-    "category": "ProductivityApplication"
+    "category": "ProductivityApplication",
+    "colors": {
+      "bg": "#F6F1E7",
+      "ink": "#1E1A16",
+      "soft": "#665D53",
+      "accent": "#A3362B",
+      "button": "#1E1A16",
+      "buttonInk": "#F6F1E7",
+      "line": "#DDD3C3"
+    },
+    "shots": [
+      {
+        "src": "assets/itogatari-story.webp",
+        "width": 390,
+        "height": 844
+      },
+      {
+        "src": "assets/itogatari-character.webp",
+        "width": 390,
+        "height": 844
+      }
+    ]
   }
 ]

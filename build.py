@@ -10,7 +10,9 @@ Fields: id, name, ja (Japanese name, optional), jaStyle ("sans" or "serif"),
 kind (a few words, e.g. "Habit and goal tracker"), description (a sentence
 or two), platforms (list), status ("released", "in-progress" or "planned"),
 url and releases (optional links), icon (path under assets/, optional),
-schemaType and category (for search engines; see schema.org).
+schemaType and category (for search engines; see schema.org), colors (the
+card's bg, ink, soft, accent, button, buttonInk and line; bg can be a CSS
+gradient) and shots (screenshots: src, width, height, optional alt).
 
 The images need rsvg-convert and ImageMagick (magick); without them only the
 page is rebuilt. The preview image uses Cormorant, so have it installed (or
@@ -20,6 +22,7 @@ import datetime
 import html
 import json
 import os
+import random
 import shutil
 import subprocess
 from urllib.parse import urlparse
@@ -77,28 +80,56 @@ def count_short(projects):
 
 # --- Page ---------------------------------------------------------------------
 
-def row(index, p):
+ARROW = ('<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" '
+         'stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>')
+
+
+def card(index, p):
     e = html.escape
+    c = p.get('colors', {})
+    style = ';'.join(f'--c-{k}:{v}' for k, v in [
+        ('bg', c.get('bg', '#141A28')), ('ink', c.get('ink', '#E8ECF2')), ('soft', c.get('soft', '#A6B0BF')),
+        ('accent', c.get('accent', '#8FB4EC')), ('button', c.get('button', '#E8ECF2')),
+        ('button-ink', c.get('buttonInk', '#070A12')), ('line', c.get('line', 'rgba(200, 212, 230, 0.14)'))])
     ja = f' <span class="ja-{e(p.get("jaStyle", "sans"))}" lang="ja">{e(p["ja"])}</span>' if p.get('ja') else ''
-    icon = (f'<img src="{e(p["icon"])}" alt="" width="64" height="64" loading="lazy">'
-            if p.get('icon') else '<span></span>')
-    side = [f'<span class="status {e(p["status"])}">{STATUS[p["status"]]}</span>',
-            f'<span class="meta">{e(" · ".join(p.get("platforms", [])))}</span>']
+    icon = f'<img class="icon" src="{e(p["icon"])}" alt="" width="60" height="60">' if p.get('icon') else ''
+    meta = [f'<span class="status {e(p["status"])}">{STATUS[p["status"]]}</span>']
+    if p.get('platforms'):
+        meta.append(e(' · '.join(p['platforms'])))
+    links = []
     if p.get('url'):
-        side.append(f'<a href="{e(p["url"])}">{e(urlparse(p["url"]).netloc)}</a>')
+        links.append(f'<a class="button" href="{e(p["url"])}">Visit {e(p["name"])} {ARROW}</a>')
     if p.get('releases'):
-        side.append(f'<a href="{e(p["releases"])}">Releases</a>')
-    return f'''        <li class="project" id="{e(p["id"])}">
-          <span class="num">{index:02d}</span>
-          {icon}
-          <div class="head">
+        links.append(f'<a class="plain" href="{e(p["releases"])}">Releases</a>')
+    shots = ''.join(
+        f'<img src="{e(s["src"])}" alt="{e(s.get("alt", ""))}" width="{s["width"]}" height="{s["height"]}" loading="lazy">'
+        for s in p.get('shots', []))
+    return f'''        <li class="card" id="{e(p["id"])}" style="{style}">
+          <div class="text">
+            <div class="top-row">{icon}<span class="num">{index:02d}</span></div>
             <h3>{e(p["name"])}{ja}</h3>
             <p class="kind">{e(p["kind"])}</p>
+            <p class="desc">{e(p["description"])}</p>
+            <p class="meta">{' · '.join(meta)}</p>
+            <div class="links">{''.join(links)}</div>
           </div>
-          <div class="body"><p>{e(p["description"])}</p></div>
-          <div class="side">{''.join(side)}</div>
-          <span class="tip" aria-hidden="true"><svg viewBox="0 0 120 370"><use href="#feather"/></svg>{'<i></i>' * 6}</span>
+          {f'<div class="shots" aria-hidden="true">{shots}</div>' if shots else ''}
+          <span class="tip" aria-hidden="true"><svg viewBox="0 0 120 370"><use href="#feather-line"/></svg>{'<i></i>' * 6}</span>
         </li>'''
+
+
+def falling(count=5, seed=4):
+    """A few feathers drifting down the page. Positions come from the seed,
+    so every build gives the same page."""
+    rng = random.Random(seed)
+    spans = []
+    for i in range(count):
+        x = (i + rng.uniform(0.1, 0.9)) / count * 100
+        style = (f'--x:{x:.1f}%;--y:{rng.uniform(5, 90):.0f}%;--w:{rng.choice([18, 22, 26, 30])}px;'
+                 f'--d:{rng.uniform(18, 30):.1f}s;--delay:{-rng.uniform(0, 30):.1f}s;'
+                 f'--o:{rng.uniform(0.35, 0.6):.2f};--r:{rng.uniform(-40, 40):.0f}deg')
+        spans.append(f'    <span style="{style}"><svg viewBox="0 0 120 370"><use href="#feather"/></svg></span>')
+    return '\n'.join(spans)
 
 
 def jsonld(projects):
@@ -135,7 +166,9 @@ def build_page(projects):
         'FEATHER': feather('url(#feather-fill)'),
         'MARK': MARK,
         'COUNT_SHORT': html.escape(count_short(projects)),
-        'PROJECT_ROWS': '\n'.join(row(i + 1, p) for i, p in enumerate(projects)),
+        'PROJECT_ROWS': '\n'.join(card(i + 1, p) for i, p in enumerate(projects)),
+        'FALLING': falling(),
+        'FEATHER_LINE': feather('currentColor', notch='currentColor'),
         'YEAR': str(datetime.date.today().year),
     }
     for key, value in values.items():

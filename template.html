@@ -90,66 +90,95 @@
       color: transparent;
     }
 
+    /* Falling feathers, behind everything. */
+    .fall { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .fall span {
+      position: absolute; top: -90px; left: var(--x);
+      width: var(--w); opacity: 0;
+      animation: drop var(--d) linear var(--delay) infinite;
+    }
+    .fall svg { display: block; width: 100%; height: auto; animation: sway calc(var(--d) / 3) ease-in-out infinite alternate; }
+    @keyframes drop {
+      0% { transform: translateY(0); opacity: 0; }
+      8% { opacity: var(--o); }
+      70% { opacity: var(--o); }
+      100% { transform: translateY(calc(100vh + 120px)); opacity: 0; }
+    }
+    @keyframes sway {
+      from { transform: translateX(-26px) rotate(calc(var(--r) - 22deg)); }
+      to { transform: translateX(26px) rotate(calc(var(--r) + 22deg)); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .fall span { animation: none; top: var(--y); opacity: var(--o); }
+      .fall svg { animation: none; transform: rotate(var(--r)); }
+    }
+
     /* The list. */
-    .list-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--silver-lo); padding-bottom: 10px; }
+    .list-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
     .list-head h2 { margin: 0; font: 600 32px/1 var(--display); color: var(--silver-hi); }
     .list-head span { font-size: 14px; color: var(--muted); }
-    .projects { list-style: none; margin: 0 0 104px; padding: 0; }
-    .project {
+    .projects { list-style: none; margin: 0 0 104px; padding: 0; display: grid; gap: 24px; }
+
+    /* Each project is a card in its own colours (set per project in projects.json). */
+    .card {
       position: relative;
       display: grid;
-      grid-template-columns: 44px 56px 1fr;
-      grid-template-areas: "num icon head" "body body body" "side side side";
-      gap: 6px 16px;
-      align-items: center;
-      padding: 28px 0;
-      border-bottom: 1px solid var(--rule);
+      grid-template-columns: 1fr;
+      border-radius: 28px;
+      overflow: hidden;
+      background: var(--c-bg);
+      color: var(--c-ink);
     }
-    @media (min-width: 760px) {
-      .project {
-        grid-template-columns: 64px 64px 1fr 200px;
-        grid-template-areas: "num icon head side" "num icon body side";
-        align-items: start;
-        column-gap: 24px;
-        padding: 30px 56px 30px 0;
-      }
-      .project::before {
-        content: ''; position: absolute; inset: 0 -20px; z-index: -1;
-        border-radius: 14px;
-        background: radial-gradient(60% 120% at 20% 50%, rgba(143, 180, 236, 0.08), transparent);
-        opacity: 0; transition: opacity 0.4s ease;
-      }
-      .project:hover::before, .project:focus-within::before { opacity: 1; }
-    }
-    .num {
-      grid-area: num; font: 500 34px/1 var(--display);
+    @media (min-width: 820px) { .card { grid-template-columns: 1.15fr 1fr; min-height: 440px; } }
+    .card .text { position: relative; z-index: 1; padding: 28px 24px 8px; display: flex; flex-direction: column; }
+    @media (min-width: 820px) { .card .text { padding: 44px 8px 44px 44px; } }
+    .card .top-row { display: flex; align-items: center; gap: 14px; }
+    .card .num {
+      font: 500 40px/1 var(--display);
       font-variant-numeric: lining-nums; font-feature-settings: "lnum";
-      background: linear-gradient(180deg, var(--silver-hi), var(--silver-lo));
-      -webkit-background-clip: text; background-clip: text; color: transparent;
+      color: var(--c-soft); margin-left: auto; align-self: flex-start;
     }
-    @media (min-width: 760px) { .num { font-size: 46px; margin-top: 2px; } }
-    .project img { grid-area: icon; width: 56px; height: 56px; border-radius: 14px; box-shadow: 0 0 0 1px var(--rule), 0 8px 24px rgba(0, 0, 0, 0.35); }
-    @media (min-width: 760px) { .project img { width: 64px; height: 64px; } }
-    .head { grid-area: head; }
-    .head h3 { margin: 0; font: 600 22px/1.2 var(--text); letter-spacing: -0.01em; }
-    .head h3 .ja-sans, .head h3 .ja-serif { font-size: 15px; font-weight: 500; color: var(--muted); margin-left: 8px; }
-    .head .kind { margin: 2px 0 0; font-size: 15px; color: var(--soft); }
-    .body { grid-area: body; }
-    .body p { margin: 10px 0 0; max-width: 34em; color: #CDD4DE; }
-    @media (min-width: 760px) { .body p { margin-top: 6px; } }
-    .side { grid-area: side; margin-top: 14px; font-size: 15px; display: flex; flex-wrap: wrap; gap: 4px 18px; }
-    @media (min-width: 760px) { .side { margin-top: 4px; flex-direction: column; } }
-    .side .meta { color: var(--muted); width: 100%; }
-    .status { color: var(--ink); }
-    .status.in-progress, .status.planned { color: var(--muted); font-style: italic; }
+    .card img.icon { width: 60px; height: 60px; border-radius: 15px; box-shadow: 0 0 0 1px var(--c-line), 0 6px 18px rgba(0, 0, 0, 0.18); }
+    .card h3 { margin: 22px 0 0; font: 600 clamp(28px, 3.4vw, 36px)/1.1 var(--text); letter-spacing: -0.015em; }
+    .card h3 .ja-sans, .card h3 .ja-serif { font-size: 0.5em; font-weight: 500; color: var(--c-soft); margin-left: 10px; letter-spacing: 0; }
+    .card .kind { margin: 6px 0 0; font-size: 16px; color: var(--c-soft); }
+    .card .desc { margin: 18px 0 0; font-size: 17px; max-width: 30em; }
+    .card .meta { margin: 18px 0 0; font-size: 14px; color: var(--c-soft); }
+    .card .meta .status { color: var(--c-ink); font-weight: 600; }
+    .card .meta .status.in-progress, .card .meta .status.planned { font-style: italic; font-weight: 500; }
+    .card .links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 26px; }
+    @media (min-width: 820px) { .card .links { margin-top: auto; padding-top: 28px; } }
+    .card .button {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 18px; border-radius: 12px;
+      background: var(--c-button); color: var(--c-button-ink);
+      font: 600 15px/1 var(--text); text-decoration: none;
+      transition: transform 0.15s ease;
+    }
+    .card .button:hover { transform: translateY(-1px); }
+    .card .button svg { width: 16px; height: 16px; }
+    .card .links a.plain { color: var(--c-ink); font-size: 15px; opacity: 0.85; }
+    .card .links a.plain:hover { opacity: 1; }
+    .card :focus-visible { outline-color: var(--c-ink); }
 
-    /* Each row's feather. On hover it comes apart into specks. */
-    .tip { position: absolute; right: 6px; top: 28px; width: 24px; height: 74px; transform: rotate(18deg); }
-    @media (max-width: 759px) { .tip { display: none; } }
+    /* Screenshots, standing in the card and running off its bottom edge. */
+    .card .shots { position: relative; display: flex; justify-content: center; align-items: flex-start; gap: 18px; padding: 28px 24px 0; height: 300px; }
+    @media (min-width: 820px) { .card .shots { height: auto; padding: 48px 40px 0 0; } }
+    .card .shots img {
+      width: 46%; max-width: 230px; height: auto;
+      border-radius: 22px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28), 0 0 0 1px var(--c-line);
+    }
+    .card .shots img:only-child { width: 70%; max-width: 280px; }
+    .card .shots img:nth-child(2) { margin-top: 40px; }
+
+    /* The card's feather. On hover it comes apart into specks. */
+    .tip { position: absolute; right: 22px; top: 82px; width: 20px; height: 62px; transform: rotate(18deg); color: var(--c-soft); z-index: 2; }
+    @media (max-width: 819px) { .tip { display: none; } }
     .tip svg { width: 100%; height: 100%; transition: opacity 0.5s ease 0.1s; }
-    .tip i { position: absolute; left: 50%; top: 16%; width: 3px; height: 3px; border-radius: 50%; background: var(--silver-hi); opacity: 0; }
-    .project:hover .tip svg, .project:focus-within .tip svg { opacity: 0; }
-    .project:hover .tip i, .project:focus-within .tip i { animation: speck 0.9s ease-out forwards; }
+    .tip i { position: absolute; left: 50%; top: 16%; width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0; }
+    .card:hover .tip svg, .card:focus-within .tip svg { opacity: 0; }
+    .card:hover .tip i, .card:focus-within .tip i { animation: speck 0.9s ease-out forwards; }
     .tip i:nth-child(2) { --dx: 14px; --dy: -22px; animation-delay: 0.02s !important; }
     .tip i:nth-child(3) { --dx: 22px; --dy: -8px;  animation-delay: 0.08s !important; }
     .tip i:nth-child(4) { --dx: 9px;  --dy: -34px; animation-delay: 0.12s !important; }
@@ -158,10 +187,10 @@
     .tip i:nth-child(7) { --dx: 18px; --dy: -40px; animation-delay: 0.2s !important; }
     @keyframes speck { 0% { opacity: 0.9; transform: translate(0, 0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)); } }
     @media (prefers-reduced-motion: reduce) {
+      .card .button { transition: none; }
       .tip svg { transition: none; }
-      .project:hover .tip svg, .project:focus-within .tip svg { opacity: 1; }
-      .project:hover .tip i, .project:focus-within .tip i { animation: none; }
-      .project::before { transition: none; }
+      .card:hover .tip svg, .card:focus-within .tip svg { opacity: 1; }
+      .card:hover .tip i, .card:focus-within .tip i { animation: none; }
     }
 
     footer { border-top: 1px solid var(--rule); padding: 28px 0 44px; font-size: 14px; color: var(--muted); }
@@ -176,8 +205,13 @@
         <stop offset="0" stop-color="#EEF1F5"/><stop offset="1" stop-color="#7F8A9B"/>
       </linearGradient>
       <symbol id="feather" viewBox="0 0 120 370">{{FEATHER}}</symbol>
+      <symbol id="feather-line" viewBox="0 0 120 370">{{FEATHER_LINE}}</symbol>
     </defs>
   </svg>
+
+  <div class="fall" aria-hidden="true">
+{{FALLING}}
+  </div>
 
   <div class="wrap">
     <header class="top">
