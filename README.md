@@ -2,7 +2,7 @@
 
 Noint's home page: a short intro and the list of apps, each linking to its own site on a subdomain (kizamu.nointdev.xyz, itogatari.nointdev.xyz).
 
-The look borrows from Noint, the ninth apostle in *Arifureta*, without using any of the show's art: silver and white, one cold blue, a wing for the mark, and feathers that come apart into specks.
+The look borrows from Noint, the ninth apostle in *Arifureta*, drawn from scratch rather than taken from the show: a night sky, a silver wing behind the name, a cold blue glow, and silver feathers that drift down and fade out. Projects are numbered, like the apostles.
 
 ## Adding a project
 
