@@ -93,7 +93,8 @@ def card(index, p):
         ('button-ink', c.get('buttonInk', '#070A12')), ('line', c.get('line', 'rgba(200, 212, 230, 0.14)'))])
     ja = f' <span class="ja-{e(p.get("jaStyle", "sans"))}" lang="ja">{e(p["ja"])}</span>' if p.get('ja') else ''
     icon = f'<img class="icon" src="{e(p["icon"])}" alt="" width="60" height="60">' if p.get('icon') else ''
-    meta = [f'<span class="status {e(p["status"])}">{STATUS[p["status"]]}</span>']
+    # Released is the normal case, so only projects still to come get a label.
+    meta = [] if p['status'] == 'released' else [f'<span class="status {e(p["status"])}">{STATUS[p["status"]]}</span>']
     if p.get('platforms'):
         meta.append(e(' · '.join(p['platforms'])))
     links = []
@@ -110,7 +111,7 @@ def card(index, p):
             <h3>{e(p["name"])}{ja}</h3>
             <p class="kind">{e(p["kind"])}</p>
             <p class="desc">{e(p["description"])}</p>
-            <p class="meta">{' · '.join(meta)}</p>
+            {f'<p class="meta">{" · ".join(meta)}</p>' if meta else ''}
             <div class="links">{''.join(links)}</div>
           </div>
           {f'<div class="shots" aria-hidden="true">{shots}</div>' if shots else ''}
