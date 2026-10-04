@@ -20,7 +20,6 @@ import datetime
 import html
 import json
 import os
-import random
 import shutil
 import subprocess
 from urllib.parse import urlparse
@@ -43,74 +42,10 @@ def feather(fill, notch='#0D1424'):
     )
 
 
-def _leaf(length, half_width):
-    L, W = length, half_width
-    return (f'M0,0 C{L*0.25:.1f},{-W:.1f} {L*0.75:.1f},{-W*1.05:.1f} {L:.1f},0 '
-            f'C{L*0.75:.1f},{W*0.95:.1f} {L*0.25:.1f},{W*0.9:.1f} 0,0 Z')
-
-
-def _bezier(p0, p1, p2, t):
-    return tuple((1 - t) ** 2 * a + 2 * (1 - t) * t * b + t * t * c for a, b, c in zip(p0, p1, p2))
-
-
-def wing(prefix):
-    """A wing on a 1000 x 640 box: long flight feathers hanging from the arm,
-    with two rows of shorter covering feathers over them."""
-    defs = (
-        f'<defs>'
-        f'<linearGradient id="{prefix}1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D3DDEC"/><stop offset="1" stop-color="#4C5B75"/></linearGradient>'
-        f'<linearGradient id="{prefix}2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6ECF5"/><stop offset="1" stop-color="#7D8DA6"/></linearGradient>'
-        f'<linearGradient id="{prefix}3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2F5FA"/><stop offset="1" stop-color="#A6B4C8"/></linearGradient>'
-        f'</defs>'
-    )
-    shoulder, bend, tip = (40, 420), (120, 0), (520, 40)
-    layers = [  # count, shortest and longest, width, angle at shoulder and tip, fill, part of the arm
-        (26, (150, 430), 0.16, (120, 8), f'url(#{prefix}1)', (0.0, 1.0)),
-        (20, (80, 200), 0.21, (112, 22), f'url(#{prefix}2)', (0.02, 0.92)),
-        (18, (50, 110), 0.2, (80, 20), f'url(#{prefix}3)', (0.0, 0.8)),
-    ]
-    out = []
-    for count, (short, long_), width, (a0, a1), fill, (t0, t1) in layers:
-        for i in reversed(range(count)):
-            u = i / (count - 1)
-            x, y = _bezier(shoulder, bend, tip, t0 + (t1 - t0) * u)
-            length = short + (long_ - short) * u ** 1.4
-            angle = a0 + (a1 - a0) * u
-            out.append(f'<path transform="translate({x:.1f} {y:.1f}) rotate({angle:.1f})" '
-                       f'd="{_leaf(length, length * width)}" fill="{fill}" '
-                       'stroke="#0D1424" stroke-opacity="0.55" stroke-width="1.2"/>')
-    return defs + f'<g transform="translate(60 40) scale(0.95)">{"".join(out)}</g>'
-
-
 # The mark: a small wing, on a 32 x 32 box.
 MARK = ('<path fill="currentColor" d="M3 26 C4 14 12 5 29 3 C26 7 22 9 18 10 C22 10 25 10 27 11 '
         'C24 14 20 15 16 15.5 C19 16 22 16.5 24 18 C21 20 17 20.5 13 20.5 C15 21.5 17 22.5 19 24.5 '
         'C14 25.5 8 25.5 3 26 Z"/>')
-
-
-def star_dots(width, height, count, seed):
-    rng = random.Random(seed)
-    dots = []
-    for _ in range(count):
-        x, y = rng.uniform(0, width), rng.uniform(0, height)
-        r = rng.choice([0.6, 0.7, 0.8, 1.0, 1.0, 1.3, 1.7])
-        o = rng.uniform(0.25, 0.85)
-        dots.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="{r}" fill="#DCE4F0" opacity="{o:.2f}"/>')
-    return ''.join(dots)
-
-
-def falling(count=9, seed=4):
-    """Feathers that drift down the page. Positions are fixed by the seed, so
-    every build gives the same page."""
-    rng = random.Random(seed)
-    spans = []
-    for i in range(count):
-        x = (i + rng.uniform(0.1, 0.9)) / count * 100
-        style = (f'--x:{x:.1f}%;--y:{rng.uniform(5, 90):.0f}%;--w:{rng.choice([18, 22, 26, 30, 36])}px;'
-                 f'--d:{rng.uniform(16, 30):.1f}s;--delay:{-rng.uniform(0, 30):.1f}s;'
-                 f'--o:{rng.uniform(0.4, 0.75):.2f};--r:{rng.uniform(-40, 40):.0f}deg')
-        spans.append(f'    <span style="{style}"><svg viewBox="0 0 120 370"><use href="#feather"/></svg></span>')
-    return '\n'.join(spans)
 
 
 # --- Text ---------------------------------------------------------------------
@@ -129,15 +64,6 @@ def summary(projects):
 
 def word(n):
     return NUMBERS[n] if n < len(NUMBERS) else str(n)
-
-
-def count_text(projects):
-    released = sum(p['status'] == 'released' for p in projects)
-    coming = sum(p['status'] in ('in-progress', 'planned') for p in projects)
-    text = f'{word(released).capitalize()} out so far.' if released else "Nothing's out yet."
-    if coming:
-        text += f' {word(coming).capitalize()} on the way.'
-    return text
 
 
 def count_short(projects):
@@ -207,12 +133,7 @@ def build_page(projects):
         'PROJECT_NAMES': html.escape(join_words([p['name'] for p in projects])),
         'JSONLD': jsonld(projects),
         'FEATHER': feather('url(#feather-fill)'),
-        'STARS': ('<svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">'
-                  + star_dots(1000, 1000, 110, 9) + '</svg>'),
-        'FALLING': falling(),
         'MARK': MARK,
-        'WING': wing('wg'),
-        'COUNT_TEXT': html.escape(count_text(projects)),
         'COUNT_SHORT': html.escape(count_short(projects)),
         'PROJECT_ROWS': '\n'.join(row(i + 1, p) for i, p in enumerate(projects)),
         'YEAR': str(datetime.date.today().year),
@@ -243,27 +164,15 @@ def build_images():
     render(icon, os.path.join(assets, 'favicon.png'), 48, 48)
     render(icon, os.path.join(assets, 'apple-touch-icon.png'), 180, 180)
 
-    # Preview image: the name under the wing, in the night sky, with a few feathers falling.
-    fall = ''.join(
-        f'<g transform="translate({x} {y}) rotate({r}) scale({s})" opacity="{o}">{feather("url(#ff)")}</g>'
-        for x, y, r, s, o in [(120, 420, -30, 0.2, 0.6), (1060, 440, 25, 0.24, 0.65),
-                              (230, 60, -15, 0.15, 0.5), (820, 520, 40, 0.17, 0.5), (60, 140, 20, 0.13, 0.4)]
-    )
+    # Preview image: the mark and the name on solid night blue.
     og = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#070A12"/><stop offset="0.6" stop-color="#0D1424"/><stop offset="1" stop-color="#070A12"/></linearGradient>
-    <radialGradient id="glow" cx="0.42" cy="0.5" r="0.5"><stop offset="0" stop-color="#5888E6" stop-opacity="0.32"/><stop offset="1" stop-color="#5888E6" stop-opacity="0"/></radialGradient>
     <linearGradient id="name" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0.1" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#AEB8C6"/><stop offset="1" stop-color="#7F8A9B"/></linearGradient>
-    <filter id="shade" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="18" flood-color="#070A12" flood-opacity="0.85"/></filter>
-    <linearGradient id="ff" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#EEF1F5"/><stop offset="1" stop-color="#7F8A9B"/></linearGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#sky)"/>
-  {star_dots(1200, 630, 90, 3)}
-  <rect width="1200" height="630" fill="url(#glow)"/>
-  <g transform="translate(470 -150) scale(0.9)" opacity="0.45">{wing('og')}</g>
-  {fall}
-  <text x="600" y="380" text-anchor="middle" font-family="Cormorant" font-weight="500" font-size="230" fill="url(#name)" filter="url(#shade)">Noint</text>
-  <text x="600" y="470" text-anchor="middle" font-family="IBM Plex Sans" font-size="30" letter-spacing="3" fill="#8FB4EC">nointdev.xyz</text>
+  <rect width="1200" height="630" fill="#070A12"/>
+  <g transform="translate(552 118) scale(3)" color="#EEF1F5">{MARK}</g>
+  <text x="600" y="400" text-anchor="middle" font-family="Cormorant" font-weight="500" font-size="200" fill="url(#name)">Noint</text>
+  <text x="600" y="482" text-anchor="middle" font-family="IBM Plex Sans" font-size="28" letter-spacing="3" fill="#8FB4EC">nointdev.xyz</text>
 </svg>'''
     render(og, os.path.join(assets, 'og-image.png'), 1200, 630)
 
