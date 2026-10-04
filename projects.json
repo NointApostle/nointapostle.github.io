@@ -1,0 +1,32 @@
+[
+  {
+    "id": "kizamu",
+    "name": "Kizamu",
+    "ja": "刻む",
+    "jaStyle": "sans",
+    "kind": "Habit and goal tracker",
+    "description": "Daily, weekly, monthly and long-term goals, with timers, streaks and badges. Each check-off is one more notch.",
+    "platforms": ["Android"],
+    "status": "released",
+    "url": "https://kizamu.nointdev.xyz/",
+    "releases": "https://github.com/NointApostle/kizamu/releases",
+    "icon": "assets/kizamu.png",
+    "schemaType": "MobileApplication",
+    "category": "LifestyleApplication"
+  },
+  {
+    "id": "itogatari",
+    "name": "Itogatari",
+    "ja": "糸語り",
+    "jaStyle": "serif",
+    "kind": "Story bible for writers",
+    "description": "Characters, places and world notes kept next to the chapters you're writing. Mention someone in a scene and their page lists every scene they're in.",
+    "platforms": ["Android", "Windows", "Linux"],
+    "status": "released",
+    "url": "https://itogatari.nointdev.xyz/",
+    "releases": "https://github.com/NointApostle/itogatari-release/releases",
+    "icon": "assets/itogatari.png",
+    "schemaType": "SoftwareApplication",
+    "category": "ProductivityApplication"
+  }
+]
