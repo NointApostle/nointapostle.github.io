@@ -75,8 +75,9 @@
     .top { display: flex; align-items: center; gap: 10px; padding: 22px 0; }
     .top .mark { width: 28px; height: 28px; color: var(--silver-hi); }
     .top .site { font: 600 21px/1 var(--display); letter-spacing: 0.03em; color: var(--ink); text-decoration: none; }
-    .top .gh { margin-left: auto; font-size: 15px; color: var(--soft); text-decoration: none; }
-    .top .gh:hover { color: var(--ink); }
+    .top nav { margin-left: auto; display: flex; gap: 20px; }
+    .top nav a { font-size: 15px; color: var(--soft); text-decoration: none; }
+    .top nav a:hover { color: var(--ink); }
 
     /* The name, with the wing behind it and the glow under both. */
     .intro { padding: 56px 0 64px; }
@@ -218,7 +219,10 @@
     <header class="top">
       <svg class="mark" viewBox="0 0 32 32" aria-hidden="true">{{MARK}}</svg>
       <a class="site" href="./">Noint</a>
-      <a class="gh" href="https://github.com/NointApostle">GitHub</a>
+      <nav aria-label="Links">
+        <a href="https://github.com/NointApostle">GitHub</a>
+        <a href="https://buymeacoffee.com/noint">Buy me a coffee</a>
+      </nav>
     </header>
   </div>
 
@@ -242,7 +246,7 @@
 
   <footer>
     <div class="wrap">
-      <p>© {{YEAR}} Noint · nointdev.xyz · <a href="https://github.com/NointApostle">GitHub</a></p>
+      <p>© {{YEAR}} Noint · nointdev.xyz · <a href="https://github.com/NointApostle">GitHub</a> · <a href="https://buymeacoffee.com/noint">Buy me a coffee</a></p>
       <p>The name is borrowed from Noint, the ninth apostle in <i>Arifureta: From Commonplace to World's Strongest</i>. This site has nothing to do with the series or its makers.</p>
     </div>
   </footer>
